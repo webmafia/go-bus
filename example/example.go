@@ -13,12 +13,18 @@ type Foobar struct {
 
 func main() {
 	b := bus.NewBus(16)
-	defer b.Close(true)
+	defer b.Close()
 
 	bus.Sub(b, 0, func(t *Foobar) {
 		// Pretend doing some slow work
 		time.Sleep(time.Millisecond * 10)
-		log.Println("sub:", t.Id)
+		log.Println("sub A:", t.Id)
+	})
+
+	bus.Sub(b, 0, func(t *Foobar) {
+		// Pretend doing some slow work
+		time.Sleep(time.Millisecond * 10)
+		log.Println("sub B:", t.Id)
 	})
 
 	for i := 1; i <= 100; i++ {
