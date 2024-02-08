@@ -191,29 +191,27 @@ func (b *Bus) _Pub(topic Topic, msg any) bool {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	// for b.full() && !b.closed {
-	// 	b.pubCond.Wait()
-	// }
+	for b.full() && !b.closed {
+		b.pubCond.Wait()
+	}
 
-	// if b.closed {
-	// 	return false
-	// }
+	if b.closed {
+		return false
+	}
 
 	// Put value last in queue
-	// i := b.idx(b.size)
+	i := b.idx(b.size)
 	b.size++
-	// _ = i
 
-	// in := toIface(msg)
-	// _ = in
+	in := toIface(msg)
 
-	// b.queue[i] = event{
-	// 	msg: in.data,
-	// 	sub: subscription{
-	// 		topic: topic,
-	// 		typ:   in.tab,
-	// 	},
-	// }
+	b.queue[i] = event{
+		msg: in.data,
+		sub: subscription{
+			topic: topic,
+			typ:   in.tab,
+		},
+	}
 
 	// Signal to one (1) waiting worker that there are events in queue
 	b.workCond.Signal()
