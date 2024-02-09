@@ -1,7 +1,7 @@
 package bus
 
-// Spawns a new worker.
-func (b *Bus) Worker() {
+// Spawns a new worker in the background.
+func (b *Bus) SpawnWorker() {
 	b.wg.Add(1)
 	go b.worker()
 }

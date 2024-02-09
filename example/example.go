@@ -13,7 +13,9 @@ type Foobar struct {
 
 func main() {
 	b := bus.NewBus(16)
-	defer b.Close()
+	log.Println("Workers:", b.Workers())
+	b.SpawnWorker()
+	log.Println("Workers:", b.Workers())
 
 	bus.Sub(b, 0, func(t *Foobar) {
 		// Pretend doing some slow work
@@ -27,8 +29,11 @@ func main() {
 		log.Println("sub B:", t.Id)
 	})
 
-	for i := 1; i <= 100; i++ {
+	for i := 1; i <= 10; i++ {
 		log.Println("pub:", i)
 		bus.Pub(b, 0, &Foobar{Id: i})
 	}
+
+	b.Close()
+	log.Println("Workers:", b.Workers())
 }

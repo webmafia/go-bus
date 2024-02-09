@@ -16,7 +16,7 @@ func NewBusWithWorkers(capacity int, workers int) *Bus {
 	b := NewBusWithoutWorker(capacity)
 
 	for i := 0; i < workers; i++ {
-		b.Worker()
+		b.SpawnWorker()
 	}
 
 	return b
@@ -57,7 +57,7 @@ func (b *Bus) Full() bool {
 }
 
 func (b *Bus) Workers() int {
-	return 0 // TODO
+	return int(waitgroupCount(&b.wg))
 }
 
 func (b *Bus) Close() {
