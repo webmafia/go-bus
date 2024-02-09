@@ -2,6 +2,7 @@ package bus
 
 import (
 	"runtime"
+	"sync"
 	"testing"
 )
 
@@ -76,6 +77,45 @@ func BenchmarkBusWithMultipleWorkers(b *testing.B) {
 			Pub(eb, 0, v)
 		}
 	})
+
+	b.StopTimer()
+	eb.Close()
+}
+
+func BenchmarkBusPubNew(b *testing.B) {
+	type Foobar struct {
+		Id int
+	}
+
+	eb := NewBus(32)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		Pub(eb, 0, &Foobar{Id: 1})
+	}
+
+	b.StopTimer()
+	eb.Close()
+}
+
+func BenchmarkBusPubPool(b *testing.B) {
+	type Foobar struct {
+		Id int
+	}
+
+	eb := NewBus(32)
+	pool := sync.Pool{
+		New: func() any {
+			return new(Foobar)
+		},
+	}
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		v := pool.Get().(*Foobar)
+		PubPool(eb, 0, v, &pool)
+	}
 
 	b.StopTimer()
 	eb.Close()

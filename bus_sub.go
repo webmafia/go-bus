@@ -2,6 +2,7 @@ package bus
 
 import "unsafe"
 
+// Subscribe to a topic + type. The provided callback will be called whenever a matching event arrives.
 func Sub[T any](b *Bus, topic Topic, cb func(*T)) {
 	var v *T
 	in := toIface(v)

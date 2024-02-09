@@ -11,3 +11,8 @@ type iface struct {
 func toIface(v any) iface {
 	return *(*iface)(unsafe.Pointer(&v))
 }
+
+//go:inline
+func fromIface(v iface) any {
+	return *(*any)(unsafe.Pointer(&v))
+}

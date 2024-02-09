@@ -1,8 +1,12 @@
 package bus
 
-import "unsafe"
+import (
+	"sync"
+	"unsafe"
+)
 
 type event struct {
-	msg unsafe.Pointer
-	sub subscription
+	sub  subscription
+	msg  unsafe.Pointer
+	pool *sync.Pool
 }

@@ -21,5 +21,13 @@ func (b *Bus) worker() {
 			sub(ev.msg)
 		}
 		b.mu.RUnlock()
+
+		// If a pool is set, return the message to the pool
+		if ev.pool != nil {
+			ev.pool.Put(fromIface(iface{
+				tab:  ev.sub.typ,
+				data: ev.msg,
+			}))
+		}
 	}
 }

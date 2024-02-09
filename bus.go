@@ -33,6 +33,7 @@ func NewBusWithoutWorker(capacity int) *Bus {
 	return b
 }
 
+// Event bus
 type Bus struct {
 	queue chan event
 	subs  map[subscription][]func(unsafe.Pointer)
