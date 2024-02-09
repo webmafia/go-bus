@@ -20,18 +20,24 @@ func main() {
 	bus.Sub(b, 0, func(t *Foobar) {
 		// Pretend doing some slow work
 		time.Sleep(time.Millisecond * 10)
-		log.Println("sub A:", t.Id)
+		log.Println("Sub A:", t.Id)
 	})
 
 	bus.Sub(b, 0, func(t *Foobar) {
 		// Pretend doing some slow work
 		time.Sleep(time.Millisecond * 10)
-		log.Println("sub B:", t.Id)
+		log.Println("Sub B:", t.Id)
+	})
+
+	bus.Sub(b, 1, func(t *Foobar) {
+		// Pretend doing some slow work
+		time.Sleep(time.Millisecond * 10)
+		log.Println("Sub C:", t.Id)
 	})
 
 	for i := 1; i <= 10; i++ {
-		log.Println("pub:", i)
-		bus.Pub(b, 0, &Foobar{Id: i})
+		log.Println("Pub:", i)
+		bus.Pub(b, bus.Topic(i%2), &Foobar{Id: i})
 	}
 
 	b.Close()
