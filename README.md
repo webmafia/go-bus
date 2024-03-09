@@ -1,9 +1,9 @@
-# go-bus
+# bus
 A generic, thread-safe, highly optimized event bus for Go.
 
 ## Install
 ```
-go get github.com/webmafia/go-bus
+go get github.com/webmafia/bus
 ```
 
 ## Usage: Simple

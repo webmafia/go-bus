@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/webmafia/go-bus"
+	"github.com/webmafia/bus"
 )
 
 type Foobar struct {

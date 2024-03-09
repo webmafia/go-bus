@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/webmafia/go-bus"
+	"github.com/webmafia/bus"
 )
 
 func BenchmarkPub(b *testing.B) {
