@@ -1,3 +1,3 @@
 package bus
 
-type Topic int
+type Topic uint64

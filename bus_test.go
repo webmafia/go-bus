@@ -1,121 +1,70 @@
 package bus
 
 import (
-	"runtime"
-	"sync"
+	"context"
 	"testing"
 )
 
-func BenchmarkBusPubWithoutWorker(b *testing.B) {
+func BenchmarkBusPubVal(b *testing.B) {
 	type Foobar struct {
 		Id int
 	}
 
-	eb := NewBusWithoutWorker(b.N)
-	v := &Foobar{Id: 1}
+	eb := NewBus(context.Background(), 32)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		Pub(eb, 0, v)
+		PubVal(eb, 0, &Foobar{Id: 1})
 	}
+
+	b.StopTimer()
+	eb.Close()
+}
+
+func BenchmarkBusPubVal_Parallell(b *testing.B) {
+	type Foobar struct {
+		Id int
+	}
+
+	eb := NewBus(context.Background(), 32)
+	v := &Foobar{Id: 1}
+
+	b.ResetTimer()
+
+	b.RunParallel(func(p *testing.PB) {
+		for p.Next() {
+			PubVal(eb, 0, v)
+		}
+	})
 
 	b.StopTimer()
 	eb.Close()
 }
 
 func BenchmarkBusPub(b *testing.B) {
-	type Foobar struct {
-		Id int
-	}
-
-	eb := NewBus(32)
-	v := &Foobar{Id: 1}
+	eb := NewBus(context.Background(), 32)
 
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		Pub(eb, 0, v)
+		Pub(eb, 0)
 	}
 
 	b.StopTimer()
 	eb.Close()
 }
 
-func BenchmarkBusPubParallell(b *testing.B) {
-	type Foobar struct {
-		Id int
-	}
-
-	eb := NewBus(32)
-	v := &Foobar{Id: 1}
+func BenchmarkBusPub_Parallell(b *testing.B) {
+	eb := NewBus(context.Background(), 32)
 
 	b.ResetTimer()
 
 	b.RunParallel(func(p *testing.PB) {
 		for p.Next() {
-			Pub(eb, 0, v)
+			Pub(eb, 0)
 		}
 	})
-
-	b.StopTimer()
-	eb.Close()
-}
-
-func BenchmarkBusWithMultipleWorkers(b *testing.B) {
-	type Foobar struct {
-		Id int
-	}
-
-	eb := NewBusWithWorkers(32, runtime.GOMAXPROCS(-1))
-	v := &Foobar{Id: 1}
-
-	b.ResetTimer()
-
-	b.RunParallel(func(p *testing.PB) {
-		for p.Next() {
-			Pub(eb, 0, v)
-		}
-	})
-
-	b.StopTimer()
-	eb.Close()
-}
-
-func BenchmarkBusPubNew(b *testing.B) {
-	type Foobar struct {
-		Id int
-	}
-
-	eb := NewBus(32)
-
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		Pub(eb, 0, &Foobar{Id: 1})
-	}
-
-	b.StopTimer()
-	eb.Close()
-}
-
-func BenchmarkBusPubPool(b *testing.B) {
-	type Foobar struct {
-		Id int
-	}
-
-	eb := NewBus(32)
-	pool := sync.Pool{
-		New: func() any {
-			return new(Foobar)
-		},
-	}
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		v := pool.Get().(*Foobar)
-		PubPool(eb, 0, v, &pool)
-	}
 
 	b.StopTimer()
 	eb.Close()

@@ -1,21 +1,47 @@
 package bus
 
-import "unsafe"
+import (
+	"context"
+	"unsafe"
+)
 
-// Subscribe to a topic + type. The provided callback will be called whenever a matching event arrives.
-func Sub[T any](b *Bus, topic Topic, cb func(*T)) {
-	var v *T
-	in := toIface(v)
-	b.sub(topic, in.tab, unsafe.Pointer(&cb))
+type subKey struct {
+	topic Topic
+	tab   uintptr
 }
 
-func (b *Bus) sub(topic Topic, typ unsafe.Pointer, cb unsafe.Pointer) {
-	sub := subscription{
-		topic: topic,
-		typ:   typ,
-	}
+type sub struct {
+	key subKey
+	cb  unsafe.Pointer
+	add bool
+}
 
-	b.mu.Lock()
-	b.subs[sub] = append(b.subs[sub], *(*func(unsafe.Pointer))(cb))
-	b.mu.Unlock()
+// Subscribe to a topic with value. The provided callback will be called whenever a matching event arrives.
+func SubVal[T any](b *Bus, topic Topic, cb func(context.Context, *T)) {
+	var v *T
+	b.sub(topic, toTab(v), unsafe.Pointer(&cb), true)
+}
+
+func Sub(b *Bus, topic Topic, cb func(context.Context)) {
+	b.sub(topic, 0, unsafe.Pointer(&cb), true)
+}
+
+func UnsubVal[T any](b *Bus, topic Topic, cb func(context.Context, *T)) {
+	var v *T
+	b.sub(topic, toTab(v), unsafe.Pointer(&cb), false)
+}
+
+func Unsub(b *Bus, topic Topic, cb func(context.Context)) {
+	b.sub(topic, 0, unsafe.Pointer(&cb), false)
+}
+
+func (b *Bus) sub(topic Topic, tab uintptr, cb unsafe.Pointer, add bool) {
+	b.subQueue <- sub{
+		key: subKey{
+			topic: topic,
+			tab:   tab,
+		},
+		cb:  cb,
+		add: add,
+	}
 }

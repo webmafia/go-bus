@@ -1,28 +1,30 @@
 package bus
 
-import "sync"
+import (
+	"unsafe"
+
+	"github.com/webmafia/fast"
+)
 
 // Publish an event to a bus.
-func Pub[T any](b *Bus, topic Topic, v *T) bool {
-	return b.pub(topic, v, nil)
-}
-
-// Publish an event to a bus. After all subscribers have been handled, return the object to the provided pool.
-func PubPool[T any](b *Bus, topic Topic, v *T, pool *sync.Pool) bool {
-	return b.pub(topic, v, pool)
-}
-
-func (b *Bus) pub(topic Topic, msg any, pool *sync.Pool) bool {
-	in := toIface(msg)
-
-	b.queue <- event{
-		sub: subscription{
-			topic: topic,
-			typ:   in.tab,
-		},
-		msg:  in.data,
-		pool: pool,
+func Pub(b *Bus, topic Topic) {
+	e := b.eventPool.acquire(0)
+	e.subKey = subKey{
+		topic: topic,
 	}
 
-	return true
+	b.queue <- e
+}
+
+// Publish an event to a bus with a value.
+func PubVal[T any](b *Bus, topic Topic, v *T) {
+	size := int(unsafe.Sizeof(*v))
+	e := b.eventPool.acquire(size)
+	e.subKey = subKey{
+		topic: topic,
+		tab:   toTab(v),
+	}
+	copy(e.msg, fast.PointerToBytes(v, size))
+
+	b.queue <- e
 }

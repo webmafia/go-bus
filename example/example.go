@@ -1,8 +1,8 @@
 package main
 
 import (
+	"context"
 	"log"
-	"time"
 
 	"github.com/webmafia/bus"
 )
@@ -12,34 +12,30 @@ type Foobar struct {
 }
 
 func main() {
-	b := bus.NewBus(16)
-	log.Println("Workers:", b.Workers())
-	b.SpawnWorker()
-	log.Println("Workers:", b.Workers())
+	b := bus.NewBus(context.Background(), 16)
 
-	bus.Sub(b, 0, func(t *Foobar) {
+	bus.SubVal(b, 1, func(ctx context.Context, t *Foobar) {
 		// Pretend doing some slow work
-		time.Sleep(time.Millisecond * 10)
+		// time.Sleep(time.Millisecond * 10)
 		log.Println("Sub A:", t.Id)
 	})
 
-	bus.Sub(b, 0, func(t *Foobar) {
+	bus.SubVal(b, 1, func(ctx context.Context, t *Foobar) {
 		// Pretend doing some slow work
-		time.Sleep(time.Millisecond * 10)
+		// time.Sleep(time.Millisecond * 10)
 		log.Println("Sub B:", t.Id)
 	})
 
-	bus.Sub(b, 1, func(t *Foobar) {
+	bus.Sub(b, 1, func(ctx context.Context) {
 		// Pretend doing some slow work
-		time.Sleep(time.Millisecond * 10)
-		log.Println("Sub C:", t.Id)
+		// time.Sleep(time.Millisecond * 10)
+		log.Println("Sub C without data")
 	})
 
 	for i := 1; i <= 10; i++ {
 		log.Println("Pub:", i)
-		bus.Pub(b, bus.Topic(i%2), &Foobar{Id: i})
+		bus.Pub(b, 1)
 	}
 
 	b.Close()
-	log.Println("Workers:", b.Workers())
 }
