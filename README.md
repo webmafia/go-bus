@@ -6,7 +6,7 @@ A generic, thread-safe, highly optimized event bus for Go.
 go get github.com/webmafia/bus
 ```
 
-## Usage: Simple
+## Usage
 ```go
 const (
 	Created bus.Topic = iota
@@ -20,65 +20,21 @@ type User struct {
 }
 
 // Create a new event bus with a buffer of 32 events
-b := bus.NewBus(32)
+b := bus.NewBus(context.Background(), 32)
 
 // Subscribe for created users
-bus.Sub(b, Created, func(u *User) {
+bus.SubVal(b, Created, func(ctx context.Context, u *User) {
 	log.Printf("User %d was created", u.Id)
 })
 
 // Subscribe for updated users
-bus.Sub(b, Updated, func(u *User) {
+bus.SubVal(b, Updated, func(ctx context.Context, u *User) {
 	log.Printf("User %d was updated", u.Id)
 })
 
 // Publish to Created topic. This will always do 1 allocation due to the pointer.
-bus.Pub(b, Created, &User{
+bus.SubVal(b, Created, &User{
 	Id:   123,
 	Name: "John Doe"
 })
-```
-
-## Usage: Pool
-```go
-const (
-	Created bus.Topic = iota
-	Updated
-	Deleted
-)
-
-type User struct {
-	Id   int
-	Name string
-}
-
-// Create a new event bus with a buffer of 32 events
-b := bus.NewBus(32)
-
-// Subscribe for created users
-bus.Sub(b, created, func(u *User) {
-	log.Printf("User %d was created", u.Id)
-})
-
-// Subscribe for updated users
-bus.Sub(b, Updated, func(u *User) {
-	log.Printf("User %d was updated", u.Id)
-})
-
-userPool := sync.Pool{
-	New: func() any {
-		return new(User)
-	},
-}
-
-// Acquire object from pool
-user := userPool.Get().(*User)
-
-// Set properties
-user.Id = 123
-user.Name = "John Doe"
-
-// Publish to Created topic. The object will be returned to the pool after
-// handling all subscriptions.
-bus.PubPool(b, Created, user, &userPool)
 ```
