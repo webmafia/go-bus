@@ -1,5 +1,5 @@
-# bus
-A generic, thread-safe, highly optimized event bus for Go.
+# DEPRECATED
+Please use [webmafia/ebus](https://github.com/webmafia/ebus) instead.
 
 ## Install
 ```
